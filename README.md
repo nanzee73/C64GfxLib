@@ -1,5 +1,9 @@
 # C64GfxLib
 
+[![Release](https://img.shields.io/jitpack/version/com.github.nanzee73/C64GfxLib)](https://jitpack.io/#nanzee73/C64GfxLib)
+[![Downloads per month](https://img.shields.io/jitpack/dm/github/nanzee73/C64GfxLib)](https://jitpack.io/#nanzee73/C64GfxLib)
+[![Downloads per week](https://img.shields.io/jitpack/dw/github/nanzee73/C64GfxLib)](https://jitpack.io/#nanzee73/C64GfxLib)
+
 Shared Commodore 64 graphics code for [FlipperJ](https://github.com/nanzee73/FlipperJ) and
 [MuleJ](https://github.com/nanzee73/MuleJ). Noncommercial use only: [PolyForm Noncommercial License 1.0.0](LICENSE).
 Version 0.1.0 was published under the MIT License.
