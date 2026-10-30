@@ -1,7 +1,8 @@
 # C64GfxLib
 
 Shared Commodore 64 graphics code for [FlipperJ](https://github.com/nanzee73/FlipperJ) and
-[MuleJ](https://github.com/nanzee73/MuleJ). MIT licensed.
+[MuleJ](https://github.com/nanzee73/MuleJ). Noncommercial use only: [PolyForm Noncommercial License 1.0.0](LICENSE).
+Version 0.1.0 was published under the MIT License.
 
 | Module | Package | Contents | Depends on |
 |---|---|---|---|

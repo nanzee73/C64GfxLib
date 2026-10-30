@@ -44,6 +44,8 @@ subprojects {
         "testImplementation"("org.junit.jupiter:junit-jupiter")
         "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
     }
+    // license inside every jar
+    tasks.withType<Jar>().configureEach { from(rootProject.file("LICENSE")) { into("META-INF") } }
     tasks.withType<Test>().configureEach { useJUnitPlatform() }
 
     extensions.configure<PublishingExtension> {
@@ -54,7 +56,7 @@ subprojects {
                     name.set(project.name)
                     description.set("Shared C64 graphics code for FlipperJ and MuleJ")
                     url.set("https://github.com/nanzee73/C64GfxLib")
-                    licenses { license { name.set("MIT License"); url.set("https://opensource.org/licenses/MIT") } }
+                    licenses { license { name.set("PolyForm Noncommercial License 1.0.0"); url.set("https://polyformproject.org/licenses/noncommercial/1.0.0") } }
                 }
             }
         }
