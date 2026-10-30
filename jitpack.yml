@@ -1,0 +1,6 @@
+# JitPack (https://jitpack.io) builds a tag on first request and publishes
+# com.github.nanzee73.C64GfxLib:c64gfx-core / c64gfx-swing.
+jdk:
+  - openjdk17
+install:
+  - ./gradlew --no-daemon publishToMavenLocal -x test

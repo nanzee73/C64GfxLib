@@ -14,22 +14,17 @@ converts from and to `BufferedImage`.
 
 ## Using it in an application
 
+The library is published through [JitPack](https://jitpack.io/#nanzee73/C64GfxLib): no account or token needed.
+
 ```kotlin
 repositories {
     mavenCentral()
-    maven {
-        url = uri("https://maven.pkg.github.com/nanzee73/C64GfxLib")
-        credentials {
-            username = (findProperty("gpr.user") as String?) ?: System.getenv("GITHUB_ACTOR")
-            password = (findProperty("gpr.key") as String?) ?: System.getenv("C64GFX_TOKEN")
-        }
-    }
+    maven("https://jitpack.io") { content { includeGroupByRegex("com\\.github\\.nanzee73.*") } }
 }
 dependencies {
-    implementation("de.c64gfx:c64gfx-swing:0.1.0")   // brings c64gfx-core along
+    implementation("com.github.nanzee73.C64GfxLib:c64gfx-swing:0.1.0")   // brings c64gfx-core along
 }
 ```
-
 At start-up, before anything else of the library is used:
 
 ```java
@@ -43,22 +38,6 @@ The application's bundle is searched first, then the library's bundle
 (`de/c64gfx/swing/i18n/messages*.properties`) with the shared texts: OK/Cancel, colour names, dither names,
 scale/aspect names, file filters, palette editor, slider tips. An app can override any of these keys.
 
-### Access to the package
-
-GitHub Packages always needs a login, also for reading.
-
-* **GitHub Actions of the apps:** Maven packages on GitHub are tied to their repository, so the automatic
-  `GITHUB_TOKEN` of another repository cannot read them (there is no "Manage Actions access" for Maven).
-  Store the same classic token (below) in each app repository as secret `C64GFX_TOKEN`
-  (*Settings ▸ Secrets and variables ▸ Actions ▸ New repository secret*).
-* **Your computer (IntelliJ, Gradle):** create a *classic* personal access token with the scope `read:packages`
-  (GitHub ▸ Settings ▸ Developer settings ▸ Personal access tokens ▸ Tokens (classic)) and put it into
-  `~/.gradle/gradle.properties` (not into a project!):
-  ```
-  gpr.user=nanzee73
-  gpr.key=ghp_…
-  ```
-
 ### Working on the library and an app at the same time
 
 Check out C64GfxLib next to the app and start Gradle with `-Pc64gfxLocal` (or put `c64gfxLocal=true` into the app's
@@ -68,11 +47,10 @@ so library changes are used immediately without publishing.
 ## Releasing a new version
 
 1. Change the library, push to `main` (GitHub Actions runs the tests).
-2. Create a tag `vX.Y.Z`, e.g. in IntelliJ *Git ▸ New Tag…* and push it (*Push Tags*), or start
-   *Actions ▸ Build & Publish ▸ Run workflow* with the version, or on GitHub
-   *Releases ▸ Draft a new release*.
-3. The workflow publishes `de.c64gfx:c64gfx-core:X.Y.Z` and `de.c64gfx:c64gfx-swing:X.Y.Z`.
-4. In the apps raise the version in `build.gradle.kts`.
+2. *Actions ▸ Release ▸ Run workflow*, enter the version, e.g. `0.2.0`. The workflow runs the tests, sets the git
+   tag `0.2.0` and waits until JitPack has built it. (A tag pushed from IntelliJ – *Git ▸ New Tag…*, then
+   *Push Tags* – works as well; JitPack then builds on the first download.) Tags have no leading `v`.
+3. In the apps raise `c64gfxVersion` in `build.gradle.kts`.
 
 ## Building
 

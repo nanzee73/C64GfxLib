@@ -1,0 +1,31 @@
+# Compiles and tests the library on every push and pull request.
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Test
+        run: |
+          chmod +x gradlew
+          set -o pipefail
+          if ! ./gradlew --no-daemon build 2>&1 | tee build.log; then
+            # make the reason visible as annotations
+            grep -E "What went wrong|error:|FAILED|Exception|> " build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done
+            exit 1
+          fi
