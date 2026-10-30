@@ -67,7 +67,8 @@ so library changes are used immediately without publishing.
 ## Releasing a new version
 
 1. Change the library, push to `main` (GitHub Actions runs the tests).
-2. Create a tag `vX.Y.Z`, e.g. in IntelliJ *Git ▸ New Tag…* and push it (*Push Tags*), or on GitHub
+2. Create a tag `vX.Y.Z`, e.g. in IntelliJ *Git ▸ New Tag…* and push it (*Push Tags*), or start
+   *Actions ▸ Build & Publish ▸ Run workflow* with the version, or on GitHub
    *Releases ▸ Draft a new release*.
 3. The workflow publishes `de.c64gfx:c64gfx-core:X.Y.Z` and `de.c64gfx:c64gfx-swing:X.Y.Z`.
 4. In the apps raise the version in `build.gradle.kts`.

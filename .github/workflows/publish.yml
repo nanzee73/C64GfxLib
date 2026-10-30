@@ -1,4 +1,6 @@
-# Tests on every push. A tag vX.Y.Z publishes version X.Y.Z of c64gfx-core and c64gfx-swing to GitHub Packages.
+# Tests on every push. Publishes version X.Y.Z of c64gfx-core and c64gfx-swing to GitHub Packages when
+#  - a tag vX.Y.Z is pushed (or a release with a new tag is created on GitHub), or
+#  - the workflow is started by hand (Actions ▸ Build & Publish ▸ Run workflow) with a version.
 name: Build & Publish
 
 on:
@@ -7,6 +9,10 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish, e.g. 0.2.0 (empty = only test)'
+        required: false
 
 permissions:
   contents: read
@@ -25,8 +31,11 @@ jobs:
 
       - name: Version
         run: |
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then V="${GITHUB_REF_NAME#v}"; else V="0.0.0-SNAPSHOT"; fi
+          V="0.0.0-SNAPSHOT"; P=false
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then V="${GITHUB_REF_NAME#v}"; P=true; fi
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then V="${{ github.event.inputs.version }}"; P=true; fi
           echo "LIB_VERSION=$V" >> "$GITHUB_ENV"
+          echo "PUBLISH=$P" >> "$GITHUB_ENV"
 
       - name: Test
         run: |
@@ -34,7 +43,7 @@ jobs:
           ./gradlew --no-daemon -PlibVersion=$LIB_VERSION build
 
       - name: Publish to GitHub Packages
-        if: github.ref_type == 'tag'
+        if: env.PUBLISH == 'true'
         run: ./gradlew --no-daemon -PlibVersion=$LIB_VERSION publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
