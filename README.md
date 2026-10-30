@@ -21,7 +21,7 @@ repositories {
         url = uri("https://maven.pkg.github.com/nanzee73/C64GfxLib")
         credentials {
             username = (findProperty("gpr.user") as String?) ?: System.getenv("GITHUB_ACTOR")
-            password = (findProperty("gpr.key") as String?) ?: System.getenv("GITHUB_TOKEN")
+            password = (findProperty("gpr.key") as String?) ?: System.getenv("C64GFX_TOKEN")
         }
     }
 }
@@ -47,9 +47,10 @@ scale/aspect names, file filters, palette editor, slider tips. An app can overri
 
 GitHub Packages always needs a login, also for reading.
 
-* **GitHub Actions of the apps:** on GitHub open *C64GfxLib ▸ Packages ▸ c64gfx-core ▸ Package settings ▸
-  Manage Actions access ▸ Add repository* and add FlipperJ and MuleJ with role *Read*; same for `c64gfx-swing`.
-  The workflows then use their automatic `GITHUB_TOKEN`.
+* **GitHub Actions of the apps:** Maven packages on GitHub are tied to their repository, so the automatic
+  `GITHUB_TOKEN` of another repository cannot read them (there is no "Manage Actions access" for Maven).
+  Store the same classic token (below) in each app repository as secret `C64GFX_TOKEN`
+  (*Settings ▸ Secrets and variables ▸ Actions ▸ New repository secret*).
 * **Your computer (IntelliJ, Gradle):** create a *classic* personal access token with the scope `read:packages`
   (GitHub ▸ Settings ▸ Developer settings ▸ Personal access tokens ▸ Tokens (classic)) and put it into
   `~/.gradle/gradle.properties` (not into a project!):
