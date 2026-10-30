@@ -1,5 +1,7 @@
 package de.c64gfx.swing;
 
+import de.c64gfx.format.C64Formats;
+
 import javax.imageio.ImageIO;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
@@ -102,9 +104,11 @@ public final class FileDialogs {
             }
         }
         if (all.isEmpty()) all.addAll(Arrays.asList(ImageIO.getReaderFileSuffixes()));
+        all.addAll(C64Formats.EXTENSIONS);
         fc.setAcceptAllFileFilterUsed(false);
         FileFilter allImages = filter(I18n.tr("filter.allImages"), all);
         fc.addChoosableFileFilter(allImages);
+        fc.addChoosableFileFilter(filter(I18n.tr("filter.c64"), new TreeSet<>(C64Formats.EXTENSIONS)));
         for (Map.Entry<String, Set<String>> e : byFormat.entrySet()) fc.addChoosableFileFilter(filter(e.getKey(), e.getValue()));
         fc.addChoosableFileFilter(fc.getAcceptAllFileFilter());
         fc.setFileFilter(allImages);
@@ -129,10 +133,11 @@ public final class FileDialogs {
 
     // ------------------------------------------------------------------ high-level open / save
 
-    /** All suffixes of the installed image readers. */
+    /** All suffixes of the installed image readers plus the C64 picture formats. */
     public static Set<String> imageSuffixes() {
         Set<String> all = new TreeSet<>();
         for (String s : ImageIO.getReaderFileSuffixes()) if (s != null && !s.isBlank()) all.add(s.toLowerCase(Locale.ROOT));
+        all.addAll(C64Formats.EXTENSIONS);
         return all;
     }
 

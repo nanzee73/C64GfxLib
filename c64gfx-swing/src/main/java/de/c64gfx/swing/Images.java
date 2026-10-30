@@ -1,6 +1,13 @@
 package de.c64gfx.swing;
 
+import de.c64gfx.format.C64Formats;
+import de.c64gfx.format.C64Picture;
 import de.c64gfx.palette.Palette;
+
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -24,6 +31,19 @@ public final class Images {
             }
         }
         return f;
+    }
+
+    /**
+     * Reads a picture: C64 files (see {@link C64Formats}) are drawn with the given palette, everything else is read
+     * by ImageIO (including installed plugins). The result is always TYPE_INT_RGB.
+     */
+    public static BufferedImage read(File file, Palette c64Palette) throws IOException {
+        if (C64Formats.isC64File(file.getName()))
+            return fromRgb(C64Formats.read(file.getName(), Files.readAllBytes(file.toPath())).render(c64Palette),
+                    C64Picture.WIDTH, C64Picture.HEIGHT);
+        BufferedImage img = ImageIO.read(file);
+        if (img == null) throw new IOException(file.getName() + ": no readable picture.");
+        return toRgb(img);
     }
 
     /** Picture from RGB pixels (0xRRGGBB). */
