@@ -40,7 +40,12 @@ jobs:
       - name: Test
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon -PlibVersion=$LIB_VERSION build
+          set -o pipefail
+          if ! ./gradlew --no-daemon -PlibVersion=$LIB_VERSION build 2>&1 | tee build.log; then
+            # make the reason visible as annotations
+            grep -E "What went wrong|error:|FAILED|Exception|> " build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done
+            exit 1
+          fi
 
       - name: Publish to GitHub Packages
         if: env.PUBLISH == 'true'

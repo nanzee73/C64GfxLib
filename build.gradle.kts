@@ -7,10 +7,6 @@
 //          gpr.user/gpr.key in ~/.gradle/gradle.properties)
 // Local:   ./gradlew publishToMavenLocal → apps can use it with -PuseMavenLocal or a composite build.
 
-plugins {
-    `java-library` apply false
-}
-
 val libVersion = (findProperty("libVersion") as String?) ?: "0.0.0-SNAPSHOT"
 
 subprojects {
