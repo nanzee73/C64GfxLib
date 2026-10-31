@@ -1,6 +1,7 @@
 package de.c64gfx.swing;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ProjectTest {
 
     @Test
-    void projectFileRoundTrip(Path dir) throws Exception {
+    void projectFileRoundTrip(@TempDir Path dir) throws Exception {
         ProjectFile p = new ProjectFile();
         p.put("contrast", 20);
         p.put("serpentine", true);
@@ -35,7 +36,7 @@ class ProjectTest {
     }
 
     @Test
-    void anExistingFolderOfAnotherLanguageIsReused(Path dir) throws Exception {
+    void anExistingFolderOfAnotherLanguageIsReused(@TempDir Path dir) throws Exception {
         Files.createDirectory(dir.resolve("Projekte"));
         File f = ProjectFolders.existingForTest(dir.toFile(), ProjectFolders.PROJECTS, "Projects");
         assertEquals("Projekte", f.getName());
