@@ -52,7 +52,7 @@ repositories {
     maven("https://jitpack.io") { content { includeGroupByRegex("com\\.github\\.nanzee73.*") } }
 }
 dependencies {
-    implementation("com.github.nanzee73.C64GfxLib:c64gfx-swing:0.1.0")   // brings c64gfx-core along
+    implementation("com.github.nanzee73.C64GfxLib:c64gfx-swing:v0.7.3")   // brings c64gfx-core along
 }
 ```
 At start-up, before anything else of the library is used:
@@ -77,10 +77,11 @@ so library changes are used immediately without publishing.
 ## Releasing a new version
 
 1. Change the library, push to `main` (GitHub Actions runs the tests).
-2. *Actions ▸ Release ▸ Run workflow*, enter the version, e.g. `0.2.0`. The workflow runs the tests, sets the git
-   tag `0.2.0` and waits until JitPack has built it. (A tag pushed from IntelliJ – *Git ▸ New Tag…*, then
-   *Push Tags* – works as well; JitPack then builds on the first download.) Tags have no leading `v`.
-3. In the apps raise `c64gfxVersion` in `build.gradle.kts`.
+2. *Actions ▸ Release ▸ Run workflow*, enter the version, e.g. `v0.8.0`. The workflow runs the tests, sets the git
+   tag `v0.8.0` (or uses it, if you created the release on GitHub first), attaches the jars to the GitHub release and
+   waits until JitPack has built it. Release tags always start with `v`; the old tags 0.1.0–0.7.3 without `v` stay
+   for the apps' history.
+3. In the apps set `c64gfxVersion` in `build.gradle.kts` to the new tag, e.g. `"v0.8.0"`.
 
 ## Building
 

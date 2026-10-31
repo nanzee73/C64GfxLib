@@ -1,14 +1,14 @@
-# Releases a new version: Actions ▸ Release ▸ Run workflow, enter e.g. 0.2.0.
-# Tests, sets the git tag 0.2.0, creates a GitHub release with the jars, and lets JitPack build it, so the apps can use
-#   com.github.nanzee73.C64GfxLib:c64gfx-swing:0.2.0
-# (Setting the tag by hand or creating a GitHub release with that tag works too; JitPack then builds on first use.)
+# Releases a version: Actions ▸ Release ▸ Run workflow, enter e.g. v0.8.0 (the "v" is added if missing).
+# Tests, sets the git tag v0.8.0 (or uses it if it exists already, e.g. for a release created on GitHub),
+# creates or fills the GitHub release with the jars, and lets JitPack build it, so the apps can use
+#   com.github.nanzee73.C64GfxLib:c64gfx-swing:v0.8.0
 name: Release
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version, e.g. 0.2.0 (becomes the git tag)'
+        description: 'Version, e.g. v0.8.0 (becomes the git tag)'
         required: true
 
 permissions:
@@ -17,29 +17,38 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    env:
-      V: ${{ github.event.inputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: Version
+        env:
+          IN: ${{ github.event.inputs.version }}
+        run: |
+          V="${IN#v}"
+          [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]] || { echo "::error::Version must look like v1.2.3"; exit 1; }
+          echo "V=$V" >> "$GITHUB_ENV"          # number, used in the jar names
+          echo "TAG=v$V" >> "$GITHUB_ENV"       # git tag, release and JitPack version
+
       - name: Test
         run: |
-          [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]] || { echo "::error::Version must look like 1.2.3"; exit 1; }
           chmod +x gradlew
           ./gradlew --no-daemon build
 
       - name: Tag
         run: |
-          if git ls-remote --exit-code --tags origin "refs/tags/$V" > /dev/null; then
-            echo "::error::Tag $V exists already"; exit 1
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+            echo "Tag $TAG exists already – using it"
+          else
+            git tag "$TAG"
+            git push origin "refs/tags/$TAG"
           fi
-          git tag "$V"
-          git push origin "refs/tags/$V"
 
       - name: Jars for the GitHub release
         run: |
@@ -50,25 +59,25 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.V }}
-          name: C64GfxLib ${{ env.V }}
+          tag_name: ${{ env.TAG }}
+          name: C64GfxLib ${{ env.TAG }}
           body: |
             Shared C64 graphics library of FlipperJ and MuleJ.
 
             Gradle: `repositories { maven("https://jitpack.io") }` and
-            `implementation("com.github.nanzee73.C64GfxLib:c64gfx-swing:${{ env.V }}")`
+            `implementation("com.github.nanzee73.C64GfxLib:c64gfx-swing:${{ env.TAG }}")`
           generate_release_notes: true
           files: dist/*
 
       - name: Build on JitPack
         run: |
           base="https://jitpack.io/com/github/nanzee73/C64GfxLib"
-          curl -s -m 30 "$base/$V/build.log" > /dev/null || true   # starts the build
+          curl -s -m 30 "$base/$TAG/build.log" > /dev/null || true   # starts the build
           for i in $(seq 1 60); do
-            if curl -sf -m 30 -o /dev/null "$base/c64gfx-swing/$V/c64gfx-swing-$V.pom"; then
-              echo "JitPack: com.github.nanzee73.C64GfxLib:c64gfx-swing:$V is available"; exit 0
+            if curl -sf -m 30 -o /dev/null "$base/c64gfx-swing/$TAG/c64gfx-swing-$TAG.pom"; then
+              echo "JitPack: com.github.nanzee73.C64GfxLib:c64gfx-swing:$TAG is available"; exit 0
             fi
             sleep 15
           done
-          curl -s "$base/$V/build.log" | tail -60
-          echo "::error::JitPack did not finish, see https://jitpack.io/#nanzee73/C64GfxLib/$V"; exit 1
+          curl -s "$base/$TAG/build.log" | tail -60
+          echo "::error::JitPack did not finish, see https://jitpack.io/#nanzee73/C64GfxLib/$TAG"; exit 1
