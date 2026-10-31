@@ -45,7 +45,7 @@ jobs:
         run: |
           ./gradlew --no-daemon -PlibVersion=$V assemble
           mkdir -p dist
-          cp c64gfx-core/build/libs/*.jar c64gfx-swing/build/libs/*.jar dist/
+          cp c64gfx-core/build/libs/*-"$V"*.jar c64gfx-swing/build/libs/*-"$V"*.jar dist/   # not the snapshot jars of the test step
           ls -la dist
 
       - uses: softprops/action-gh-release@v2
