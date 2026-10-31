@@ -11,7 +11,7 @@ Version 0.1.0 was published under the MIT License.
 | Module | Package | Contents | Depends on |
 |---|---|---|---|
 | `c64gfx-core` | `de.c64gfx.*` | palettes (Pepto, Colodore, … + .vpl/.gpl/hex), colour matching (Euclid/RGB/YUV/HSL), dithering with per-cell colour restrictions, reading C64 pictures (`C64Formats`, see below), Koala and Art Studio writing, 6502 assembler | nothing (no AWT/Swing) |
-| `c64gfx-swing` | `de.c64gfx.swing` | `I18n` (EN/DE/PL/SV/NL, system language, live switching), `ImagePanel` (zoom, pan, crop mode), `ImageFitter`, `ImageAdjust`, `FileDialogs` (native on macOS), `SliderControls`, `PaletteEditorDialog`, `HelpDialog` (HTML user guide per language), `Icons`, `Platform`, `WrapLayout` | `c64gfx-core` |
+| `c64gfx-swing` | `de.c64gfx.swing` | `I18n` (EN/DE/PL/SV/NL, system language, live switching), `ImagePanel` (zoom, pan, crop mode), `ImageFitter`, `ImageAdjust`, `FileDialogs` (native on macOS), `SliderControls`, `PaletteEditorDialog`, `HelpDialog` (HTML user guide per language), `UndoHistory` (undo/redo of settings by snapshots, 100 steps, Edit menu), `Icons`, `Platform`, `WrapLayout` | `c64gfx-core` |
 
 `c64gfx-core` deliberately avoids AWT, so it can also be used on Android later. Pictures are passed as plain arrays:
 `float[w*h*3]` RGB for input, `int[]` palette indices or `0xRRGGBB` pixels for output; `de.c64gfx.swing.Images`
