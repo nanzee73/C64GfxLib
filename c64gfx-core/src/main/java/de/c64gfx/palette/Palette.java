@@ -13,7 +13,7 @@ public final class Palette {
     private final int[] rgb;
 
     public Palette(String name, int[] rgb) {
-        if (rgb.length != 16) throw new IllegalArgumentException("A palette needs 16 colors");
+        if (rgb.length != 16) throw new IllegalArgumentException("A palette needs 16 colours");
         this.name = name;
         this.rgb = Arrays.copyOf(rgb, 16);
     }

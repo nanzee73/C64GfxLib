@@ -64,6 +64,12 @@ public final class UndoHistory {
         fire();                                   // Ctrl+Z works at once, even before the pause is over
     }
 
+    /** The current state (pending changes recorded first), e.g. to compare with a saved project. */
+    public Map<String, Object> state() {
+        commit();
+        return current == null ? Map.of() : java.util.Collections.unmodifiableMap(new LinkedHashMap<>(current));
+    }
+
     /** True while a state is being restored – the application should not record changes then. */
     public boolean isRestoring() { return restoring; }
 

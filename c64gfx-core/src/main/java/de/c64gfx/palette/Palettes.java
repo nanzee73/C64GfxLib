@@ -91,7 +91,7 @@ public final class Palettes {
             }
             if (colors.size() == 16) break;
         }
-        if (colors.size() < 16) throw new IOException("File contains only " + colors.size() + " colors, 16 are required.");
+        if (colors.size() < 16) throw new IOException("File contains only " + colors.size() + " colours, 16 are required.");
         int[] arr = colors.stream().mapToInt(Integer::intValue).toArray();
         return new Palette(fname.replaceFirst("\\.[^.]+$", ""), arr);
     }
