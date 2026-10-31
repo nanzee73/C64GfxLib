@@ -1,5 +1,5 @@
 # Releases a new version: Actions ▸ Release ▸ Run workflow, enter e.g. 0.2.0.
-# Tests, sets the git tag 0.2.0, and lets JitPack build it, so the apps can use
+# Tests, sets the git tag 0.2.0, creates a GitHub release with the jars, and lets JitPack build it, so the apps can use
 #   com.github.nanzee73.C64GfxLib:c64gfx-swing:0.2.0
 # (Setting the tag by hand or creating a GitHub release with that tag works too; JitPack then builds on first use.)
 name: Release
@@ -40,6 +40,25 @@ jobs:
           fi
           git tag "$V"
           git push origin "refs/tags/$V"
+
+      - name: Jars for the GitHub release
+        run: |
+          ./gradlew --no-daemon -PlibVersion=$V assemble
+          mkdir -p dist
+          cp c64gfx-core/build/libs/*.jar c64gfx-swing/build/libs/*.jar dist/
+          ls -la dist
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.V }}
+          name: C64GfxLib ${{ env.V }}
+          body: |
+            Shared C64 graphics library of FlipperJ and MuleJ.
+
+            Gradle: `repositories { maven("https://jitpack.io") }` and
+            `implementation("com.github.nanzee73.C64GfxLib:c64gfx-swing:${{ env.V }}")`
+          generate_release_notes: true
+          files: dist/*
 
       - name: Build on JitPack
         run: |
