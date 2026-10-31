@@ -159,9 +159,102 @@ class C64FormatsTest {
     @Test
     void wrongSizesAreRejected() {
         assertThrows(IOException.class, () -> C64Formats.read("x.fli", new byte[1234]));
+        assertThrows(IOException.class, () -> C64Formats.read("x.nuf", new byte[23042]));   // no valid sprite pointers
         assertThrows(IOException.class, () -> C64Formats.read("x.png", new byte[10003]));
         assertTrue(C64Formats.isC64File("PIC.GUN"));
         assertFalse(C64Formats.isC64File("pic.png"));
+    }
+
+    // --- NUFLI / MUFLI / MUIFLI ----------------------------------------------------------------------------------
+
+    /** Screen RAM offset of picture line y in NUFLI/MUFLI files (as documented). */
+    private static int nufScreen(int y) {
+        return y < 128 ? 0x2002 + ((((~y) >> 1) & 7) << 10) : 2 + ((((y >> 1) + (y >= 168 ? 1 : 0)) & 3) << 10);
+    }
+
+    /** Valid sprite pointers in every screen (an empty file has none, and those files are rejected). */
+    private static void spritePointers(byte[] d, int screenShift) {
+        for (int y = 0; y < 200; y++) {
+            int base = nufScreen(y) - screenShift;
+            for (int k = 0x3f8; k <= 0x3ff; k++) if (base + k >= 0 && base + k < d.length) d[base + k] = (byte) 0x90;
+        }
+    }
+
+    /** Packs in the backwards format of the NUFLI/MUFLI editors (from the end of the data to offset 2). */
+    private static byte[] packBackwards(byte[] raw, byte[] header, int escape) {
+        ByteArrayOutputStream rev = new ByteArrayOutputStream();     // commands in reading order (from the end)
+        int i = raw.length - 1;
+        while (i >= 2) {
+            int b = raw[i] & 0xFF, n = 1;
+            while (i - n >= 2 && n < 255 && (raw[i - n] & 0xFF) == b) n++;
+            if (n > 3 || b == escape) { rev.write(escape); rev.write(n); rev.write(b); }
+            else for (int k = 0; k < n; k++) rev.write(b);
+            i -= n;
+        }
+        byte[] cmds = rev.toByteArray();
+        byte[] out = new byte[header.length + cmds.length];
+        System.arraycopy(header, 0, out, 0, header.length);
+        for (int k = 0; k < cmds.length; k++) out[out.length - 1 - k] = cmds[k];   // read backwards
+        return out;
+    }
+
+    @Test
+    void nufliBitmapUsesTheScreenOfItsLinePair() throws IOException {
+        byte[] d = new byte[23042];
+        spritePointers(d, 0);
+        for (int y : new int[]{5, 130}) {
+            int offset = (y & ~7) * 5 + 10;                           // column 10
+            d[(y < 128 ? 0x4002 : 2) + (offset << 3) + (y & 7)] = (byte) 0x80;
+            d[nufScreen(y) + offset] = (byte) (y == 5 ? 0x7E : 0x3D);
+        }
+        C64Picture p = C64Formats.read("x.nuf", d);
+        assertEquals("NUFLI Editor", p.format());
+        assertFalse(p.multicolor());
+        assertEquals(7, px(p, 80, 5), "set bit: screen high nibble");
+        assertEquals(3, px(p, 80, 130));
+        assertEquals(14, px(p, 81, 5), "cleared bit without sprite: screen low nibble");
+    }
+
+    @Test
+    void nufliPackedEqualsUnpacked() throws IOException {
+        byte[] raw = new byte[23042];
+        for (int i = 2; i < raw.length; i += 7) raw[i] = (byte) (i * 31);
+        spritePointers(raw, 0);
+        raw[0x4002 + 400] = (byte) 0xFE;                              // the escape byte itself as data
+        byte[] packed = packBackwards(raw, new byte[]{0, 0x20, (byte) 0xFD, (byte) 0xFE}, 0xFE);
+        C64Picture a = C64Formats.read("x.nuf", raw), b = C64Formats.read("x.nup", packed);
+        assertArrayEquals(a.frame1(), b.frame1());
+    }
+
+    @Test
+    void mufliAndMuifli() throws IOException {
+        byte[] d = new byte[21826];
+        spritePointers(d, 0x100);
+        int y = 10, offset = (y & ~7) * 5 + 3 + 4;                    // visible column 4 (screen column 7)
+        d[0x3f02 + (offset << 3) + (y & 7)] = (byte) 0x80;
+        d[nufScreen(y) - 0x100 + offset] = (byte) 0x5A;
+        C64Picture p = C64Formats.read("x.muf", d);
+        assertEquals(5, px(p, 24 + 32, y), "set bit: screen high nibble");
+        assertEquals(10, px(p, 24 + 33, y), "cleared bit, no sprite: screen low nibble");
+        assertEquals(0, px(p, 3, y), "FLI bug area");
+        assertArrayEquals(p.frame1(), C64Formats.read("x.mup", packBackwards(d, new byte[]{0, 0x20, (byte) 0xFE}, 0xFE)).frame1());
+
+        byte[] mui = new byte[44034];                                 // both frames show the same picture
+        System.arraycopy(d, 0, mui, 0, d.length);
+        System.arraycopy(d, 2, mui, 0x8002, 0x2c00);
+        System.arraycopy(d, 0x2c02, mui, 0x5602, 0x2900);
+        C64Picture i = C64Formats.read("x.mui", mui);
+        assertTrue(i.interlaced());
+        assertEquals(5, px(i, 24 + 32, y));
+    }
+
+    @Test
+    void unpackBackwardsHandlesRunsAndCount256() throws IOException {
+        // read from the end: literal 7, then escape + count 0 (=256) + value 1, written from the end backwards
+        byte[] d = {0, 0, 1, 0, (byte) 0xFE, 7};
+        byte[] u = C64Formats.unpackBackwards(d, 0xFE, 2 + 257);
+        assertEquals(7, u[258]);
+        for (int k = 2; k < 258; k++) assertEquals(1, u[k]);
     }
 
     // a simple packer in the Drazpaint/Funpaint style, only for the tests

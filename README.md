@@ -36,6 +36,9 @@ of `FileDialogs` has a "C64 pictures" filter.
 | AFLI | `.afl` |
 | Gunpaint, interlace FLI | `.gun .ifl` |
 | Funpaint II, interlace FLI (also compressed) | `.fun .fp2` |
+| NUFLI (NUFLI Editor, also compressed) | `.nuf .nup` |
+| MUFLI (MUFLI Editor, also compressed) | `.muf .mup` |
+| MUIFLI, interlace (MUIFLI Editor) | `.mui` |
 | FlipperJ raw files (load address $3C00) | `.fli .afl .ifl` |
 
 The format is recognised by extension and file size. The leftmost three character columns of FLI pictures
